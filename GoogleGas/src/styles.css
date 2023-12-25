@@ -46,14 +46,9 @@
   } 
 
   .map-style {
-    text-align: center;
     position: fixed;
-    top: 195px;
+    top: 100px;
     height: 100%;
     width: 100%;
-    z-index: 100; /* Adjust the z-index to be below the header */
-    flex-wrap: wrap;
-    justify-content: center;
-
   } 
 

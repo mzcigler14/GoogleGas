@@ -9,16 +9,20 @@ import usePlacesAutocomplete, {
 import { useState } from "react";
 
 interface props {
-  setOrigin: React.Dispatch<React.SetStateAction<string>>;
-  setDestination: React.Dispatch<React.SetStateAction<string>>;
+  search: boolean;
+  setOrigin: React.Dispatch<React.SetStateAction<google.maps.LatLng>>;
+  setDestination: React.Dispatch<React.SetStateAction<google.maps.LatLng>>;
   setDistance: React.Dispatch<React.SetStateAction<number>>;
   setSearch: React.Dispatch<React.SetStateAction<boolean>>;
+  onClick: () => void;
 }
 const InputBar = ({
+  search,
   setOrigin,
   setDestination,
   setDistance,
   setSearch,
+  onClick,
 }: props) => {
   const {
     ready,
@@ -39,7 +43,9 @@ const InputBar = ({
       React.SetStateAction<google.maps.places.AutocompletePrediction[]>
     >
   ) => {
-    console.log(input);
+    if (search) {
+      window.location.reload();
+    }
     if (input) {
       setAction(data);
     }
@@ -50,7 +56,6 @@ const InputBar = ({
   ) => {
     setSearch(false);
     setValue(e.target.value);
-    setOrigin(e.target.value);
     if (e.target instanceof HTMLInputElement && status === "OK") {
       handleSuggestionsRequest(e.target, setOrigins);
     }
@@ -61,16 +66,26 @@ const InputBar = ({
   ) => {
     setSearch(false);
     setValue(e.target.value);
-    setDestination(e.target.value);
     if (e.target instanceof HTMLInputElement && status === "OK") {
       handleSuggestionsRequest(e.target, setDestinations);
     }
   };
 
+  const handleSelect = async (
+    setAction: React.Dispatch<React.SetStateAction<google.maps.LatLng>>,
+    place: google.maps.places.AutocompletePrediction
+  ) => {
+    const geocoderRequest: google.maps.GeocoderRequest = {
+      placeId: place.place_id,
+    };
+    const latlnggeo = await getGeocode(geocoderRequest);
+    const latlng = await getLatLng(latlnggeo[0]);
+    setAction(new google.maps.LatLng(latlng));
+  };
+
   const handleFindGas = () => {
-    console.log("find gas button clicked");
     setSearch(true);
-    setSearch(true);
+    onClick();
   };
   return (
     <div className="input-bar">
@@ -81,7 +96,7 @@ const InputBar = ({
         sx={{ width: 200 }}
         onChange={(event, newValue) => {
           if (newValue) {
-            setOrigin(newValue.description);
+            handleSelect(setOrigin, newValue);
           }
         }}
         renderInput={(params) => (
@@ -100,7 +115,7 @@ const InputBar = ({
         sx={{ width: 200 }}
         onChange={(event, newValue) => {
           if (newValue) {
-            setDestination(newValue.description);
+            handleSelect(setDestination, newValue);
           }
         }}
         renderInput={(params) => (
